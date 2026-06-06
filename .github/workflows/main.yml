@@ -1,4 +1,4 @@
-name: Build Minecraft Server
+name: Build Minecraft Server and Velocity
 on:
   push:
     branches:
@@ -15,31 +15,50 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # این بخش را اضافه کنید تا جاوا ۲۵ نصب شود
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: '25'
           distribution: 'temurin'
 
+      # Creating separate directories to keep files organized
+      - name: Create directories
+        run: |
+          mkdir paper_server
+          mkdir velocity_proxy
+
+      # Download the server core files
       - name: Download PaperMC
-        run: wget -O paper.jar "https://fill-data.papermc.io/v1/objects/d30fae0c74092b10855f0412ca6b265c60301a013d34bc28a2a41bf5682dd80b/paper-26.1.2-69.jar"
+        run: wget -O paper_server/paper.jar "https://fill-data.papermc.io/v1/objects/d30fae0c74092b10855f0412ca6b265c60301a013d34bc28a2a41bf5682dd80b/paper-26.1.2-69.jar"
 
-      - name: Generate EULA and Accept
+      - name: Download Velocity
+        run: wget -O velocity_proxy/velocity.jar "https://fill-data.papermc.io/v1/objects/fb599cbda6a6d01decce5e281f71f51cae7cacffcfafca32a09601f407b0583e/velocity-3.4.0-566.jar"
+
+      # Setup PaperMC: Accept EULA and then run to generate dependencies
+      - name: Setup PaperMC (EULA and Init)
+        working-directory: paper_server
         run: |
+          # First run to generate eula.txt
           java -jar paper.jar --nogui || true
+          # Accept EULA
           sed -i 's/eula=false/eula=true/' eula.txt
-
-      - name: Run Server (Download dependencies)
-        run: |
+          # Run again to download libraries and generate world files
           timeout 120s java -jar paper.jar --nogui || true
 
+      # Setup Velocity: Run to generate config files
+      - name: Setup Velocity
+        working-directory: velocity_proxy
+        run: |
+          timeout 60s java -jar velocity.jar || true
+
+      # Compress all files into one package
       - name: Compress Everything
         run: |
-          zip -9 -r server_full.zip . -x ".git/*" -x ".github/*"
+          zip -9 -r server_package.zip . -x ".git/*" -x ".github/*"
 
+      # Upload the result to GitHub releases
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: server-build-${{ github.run_id }}
-          files: server_full.zip
+          files: server_package.zip
