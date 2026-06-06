@@ -12,6 +12,16 @@ jobs:
   build-server:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # این بخش را اضافه کنید تا جاوا ۲۵ نصب شود
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
       - name: Download PaperMC
         run: wget -O paper.jar "https://fill-data.papermc.io/v1/objects/d30fae0c74092b10855f0412ca6b265c60301a013d34bc28a2a41bf5682dd80b/paper-26.1.2-69.jar"
 
@@ -22,13 +32,10 @@ jobs:
 
       - name: Run Server (Download dependencies)
         run: |
-          # اجرای سرور به مدت ۲ دقیقه برای دانلود فایل‌های جانبی از موجانگ
-          # بعد از ۲ دقیقه تایم‌اوت می‌شود تا پروسه بسته شود
           timeout 120s java -jar paper.jar --nogui || true
 
       - name: Compress Everything
         run: |
-          # فشرده‌سازی با حداکثر قدرت (سطح ۹)
           zip -9 -r server_full.zip . -x ".git/*" -x ".github/*"
 
       - name: Upload to Release
