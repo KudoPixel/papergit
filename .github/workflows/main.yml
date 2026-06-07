@@ -34,7 +34,7 @@ jobs:
       - name: Download Velocity
         run: wget -O velocity_proxy/velocity.jar "https://fill-data.papermc.io/v1/objects/fb599cbda6a6d01decce5e281f71f51cae7cacffcfafca32a09601f407b0583e/velocity-3.4.0-566.jar"
 
-      # Setup PaperMC: EULA, first run, add plugin, and second run
+      # Setup PaperMC: EULA, first run, add plugin, and second run with custom console commands
       - name: Setup PaperMC (EULA, Plugins, and Init)
         working-directory: paper_server
         run: |
@@ -59,8 +59,8 @@ jobs:
           wget -O plugins/FancyNpcs-2.10.1.jar "https://cdn.modrinth.com/data/EeyAn23L/versions/x31qn7aH/FancyNpcs-2.10.1.jar?mr_download_reason=standalone&mr_game_version=26.1.2&mr_loader=paper"
           wget -O plugins/LuckPerms-Bukkit-5.5.53.jar "https://cdn.modrinth.com/data/Vebnzrzj/versions/MBSY8toc/LuckPerms-Bukkit-5.5.53.jar?mr_download_reason=standalone&mr_game_version=26.1.2&mr_loader=paper"
           
-          # Final run to initialize plugin
-          timeout 60s java -jar paper.jar --nogui || true
+          # Run the server, wait 120s, execute PAPI command, wait 60s, then stop gracefully
+          (sleep 120 && echo "papi ecloud download Statistic" && sleep 60 && echo "stop") | java -jar paper.jar --nogui
 
       # Setup Velocity: Run to generate config files
       - name: Setup Velocity
@@ -75,14 +75,15 @@ jobs:
           # Run to initialize plugin
           timeout 60s java -jar velocity.jar || true
 
-      # Compress all files into one package
-      - name: Compress Everything
+      # High-efficiency compression using Tar with XZ algorithm
+      - name: Compress Everything (Tar XZ)
         run: |
-          zip -9 -r server_package.zip . -x ".git/*" -x ".github/*"
+          tar -C . -cJf minecraft_velocity_package.tar.xz --exclude=".git" --exclude=".github" .
 
-      # Upload the result to GitHub releases
+      # Upload the high-compressed package to GitHub releases with a meaningful name
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: server-build-${{ github.run_id }}
-          files: server_package.zip
+          tag_name: minecraft-network-build-${{ github.run_id }}
+          name: "Minecraft Server & Velocity Proxy Build - ${{ github.run_id }}"
+          files: minecraft_velocity_package.tar.xz
