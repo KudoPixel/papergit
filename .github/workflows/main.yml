@@ -75,15 +75,15 @@ jobs:
           # Run to initialize plugin
           timeout 60s java -jar velocity.jar || true
 
-      # High-efficiency compression using Tar with XZ algorithm
+      # High-efficiency compression (Output file is created in the parent directory to prevent self-reference errors)
       - name: Compress Everything (Tar XZ)
         run: |
-          tar -C . -cJf minecraft_velocity_package.tar.xz --exclude=".git" --exclude=".github" .
+          tar -cJf ../minecraft_velocity_package.tar.xz --exclude=".git" --exclude=".github" .
 
-      # Upload the high-compressed package to GitHub releases with a meaningful name
+      # Upload the package from the parent directory to GitHub releases
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: minecraft-network-build-${{ github.run_id }}
           name: "Minecraft Server & Velocity Proxy Build - ${{ github.run_id }}"
-          files: minecraft_velocity_package.tar.xz
+          files: ../minecraft_velocity_package.tar.xz
