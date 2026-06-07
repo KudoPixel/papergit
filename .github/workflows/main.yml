@@ -25,7 +25,7 @@ jobs:
       - name: Create directories
         run: |
           mkdir -p paper_server/plugins
-          mkdir -p velocity_proxy
+          mkdir -p velocity_proxy/plugins
 
       # Download core files
       - name: Download PaperMC
@@ -49,6 +49,16 @@ jobs:
           # Download and install AuthMe plugin
           wget -O plugins/AuthMe-6.0.0-Paper.jar "https://github.com/AuthMe/AuthMeReloaded/releases/download/6.0.0/AuthMe-6.0.0-Paper.jar"
           
+          # Download and install additional plugins
+          wget -O plugins/EssentialsX-2.22.0.jar "https://github.com/EssentialsX/Essentials/releases/download/2.22.0/EssentialsX-2.22.0.jar"
+          wget -O plugins/VaultUnlocked-2.19.1.jar "https://cdn.modrinth.com/data/ayRaM8J7/versions/ypDodbNn/VaultUnlocked-2.19.1.jar?mr_download_reason=standalone&mr_game_version=26.1.2&mr_loader=paper"
+          wget -O plugins/PlayerPoints-3.3.4.jar "https://cdn.modrinth.com/data/bPX4jcVd/versions/5fiRT40B/PlayerPoints-3.3.4.jar?mr_download_reason=standalone&mr_game_version=26.1.2&mr_loader=paper"
+          wget -O plugins/PlaceholderAPI-2.12.2.jar "https://cdn.modrinth.com/data/lKEzGugV/versions/UmbIiI5H/PlaceholderAPI-2.12.2.jar?mr_download_reason=standalone&mr_game_version=26.1.2&mr_loader=paper"
+          wget -O plugins/DecentHolograms-2.9.10.jar "https://cdn.modrinth.com/data/w02MKsTg/versions/t9gURTWO/DecentHolograms-2.9.10.jar?mr_download_reason=standalone&mr_game_version=26.1.2&mr_loader=paper"
+          wget -O plugins/ajLeaderboards-2.11.0.jar "https://cdn.modrinth.com/data/C9BKEl8Y/versions/6nwpDKtA/ajLeaderboards-2.11.0.jar?mr_download_reason=standalone&mr_game_version=26.1.2&mr_loader=paper"
+          wget -O plugins/FancyNpcs-2.10.1.jar "https://cdn.modrinth.com/data/EeyAn23L/versions/x31qn7aH/FancyNpcs-2.10.1.jar?mr_download_reason=standalone&mr_game_version=26.1.2&mr_loader=paper"
+          wget -O plugins/LuckPerms-Bukkit-5.5.53.jar "https://cdn.modrinth.com/data/Vebnzrzj/versions/MBSY8toc/LuckPerms-Bukkit-5.5.53.jar?mr_download_reason=standalone&mr_game_version=26.1.2&mr_loader=paper"
+          
           # Final run to initialize plugin
           timeout 60s java -jar paper.jar --nogui || true
 
@@ -56,6 +66,13 @@ jobs:
       - name: Setup Velocity
         working-directory: velocity_proxy
         run: |
+          # Generate initial config
+          timeout 60s java -jar velocity.jar || true
+          
+          # Download and install LuckPerms
+          wget -O plugins/LuckPerms-Velocity-5.5.53.jar "https://cdn.modrinth.com/data/Vebnzrzj/versions/BmxJvHsa/LuckPerms-Velocity-5.5.53.jar?mr_download_reason=standalone&mr_game_version=26.1.2&mr_loader=velocity"
+          
+          # Run to initialize plugin
           timeout 60s java -jar velocity.jar || true
 
       # Compress all files into one package
